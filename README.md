@@ -1,6 +1,8 @@
 Welcome to openpilot
 ======
 
+Modified for an RC car.
+
 [openpilot](http://github.com/commaai/openpilot) is an open source driving agent.
 
 Currently it performs the functions of Adaptive Cruise Control (ACC) and Lane Keeping Assist System (LKAS) for Hondas and Acuras. It's about on par with Tesla Autopilot at launch, and better than [all other manufacturers](http://www.thedrive.com/tech/5707/the-war-for-autonomous-driving-part-iii-us-vs-germany-vs-japan).

@@ -26,14 +26,14 @@ from selfdrive.loggerd.config import ROOT
 
 # comment out anything you don't want to run
 managed_processes = {
-  "uploader": "selfdrive.loggerd.uploader",
-  "controlsd": "selfdrive.controls.controlsd",
-  "radard": "selfdrive.controls.radard",
-  "calibrationd": "selfdrive.calibrationd.calibrationd",
-  "loggerd": "selfdrive.loggerd.loggerd",
-  "logmessaged": "selfdrive.logmessaged",
-  "logcatd": ("logcatd", ["./logcatd"]),
-  "boardd": ("boardd", ["./boardd"]),   # switch to c++ boardd
+  #"uploader": "selfdrive.loggerd.uploader",
+  #"controlsd": "selfdrive.controls.controlsd",
+  #"radard": "selfdrive.controls.radard",
+  #"calibrationd": "selfdrive.calibrationd.calibrationd",
+  #"loggerd": "selfdrive.loggerd.loggerd",
+  #"logmessaged": "selfdrive.logmessaged",
+  #"logcatd": ("logcatd", ["./logcatd"]),
+  #"boardd": ("boardd", ["./boardd"]),   # switch to c++ boardd
   "ui": ("ui", ["./ui"]),
   "visiond": ("visiond", ["./visiond"]),
   "sensord": ("sensord", ["./sensord"]), }
@@ -177,6 +177,7 @@ def manager_thread():
 
   if os.getenv("NOBOARD") is None:
     # *** wait for the board ***
+    print "waiting for the board"
     wait_for_device()
 
   # flash the device
@@ -307,8 +308,8 @@ def main():
     del managed_processes['uploader']
   if os.getenv("NOVISION") is not None:
     del managed_processes['visiond']
-  if os.getenv("NOBOARD") is not None:
-    del managed_processes['boardd']
+#  if os.getenv("NOBOARD") is not None:
+#    del managed_processes['boardd']
   if os.getenv("LEAN") is not None:
     del managed_processes['uploader']
     del managed_processes['loggerd']

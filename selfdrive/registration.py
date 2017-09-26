@@ -20,6 +20,7 @@ def get_serial():
   return subprocess.check_output(["getprop", "ro.serialno"]).strip()
 
 def register():
+  return "123", "sosecret"
   try:
     if os.path.exists(DONGLEAUTH_PATH):
       dongleauth = json.load(open(DONGLEAUTH_PATH))

@@ -30,9 +30,9 @@ managed_processes = {
   #"controlsd": "selfdrive.controls.controlsd",
   #"radard": "selfdrive.controls.radard",
   #"calibrationd": "selfdrive.calibrationd.calibrationd",
-  #"loggerd": "selfdrive.loggerd.loggerd",
-  #"logmessaged": "selfdrive.logmessaged",
-  #"logcatd": ("logcatd", ["./logcatd"]),
+  "loggerd": "selfdrive.loggerd.loggerd",
+  "logmessaged": "selfdrive.logmessaged",
+  "logcatd": ("logcatd", ["./logcatd"]),
   #"boardd": ("boardd", ["./boardd"]),   # switch to c++ boardd
   "ui": ("ui", ["./ui"]),
   "visiond": ("visiond", ["./visiond"]),

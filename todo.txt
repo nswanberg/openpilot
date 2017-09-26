@@ -1,0 +1,7 @@
+create service to drive websockets
+remove car-specific features from:
+  controlsd
+read images from camera
+replace visiond
+install qualcomm tensorflow
+

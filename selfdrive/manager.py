@@ -36,7 +36,8 @@ managed_processes = {
   #"boardd": ("boardd", ["./boardd"]),   # switch to c++ boardd
   "ui": ("ui", ["./ui"]),
   "visiond": ("visiond", ["./visiond"]),
-  "sensord": ("sensord", ["./sensord"]), }
+  "sensord": ("sensord", ["./sensord"]), 
+  "espd": "selfdrive.espd.espd" }
 
 running = {}
 
@@ -46,7 +47,14 @@ unkillable_processes = ['visiond']
 # processes to end with SIGINT instead of SIGTERM
 interrupt_processes = ['loggerd']
 
-car_started_processes = ['controlsd', 'loggerd', 'sensord', 'radard', 'calibrationd', 'visiond']
+car_started_processes = [
+  'controlsd',
+  'loggerd',
+  'sensord',
+  'radard',
+  'calibrationd',
+  'visiond',
+  'espd']
 
 
 # ****************** process management functions ******************

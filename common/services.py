@@ -34,6 +34,8 @@ service_list = {
   "liveCalibration": Service(8019, True),
   "androidLog": Service(8020, True),
   "carState": Service(8021, True),
+  "sendesp": Service(8022, True),
+  #"arduino": Service(8023, True)
 }
 
 # manager -- base process to manage starting and stopping of all others
@@ -52,6 +54,9 @@ service_list = {
 # visiond -- talks to the cameras, runs the model, saves the videos
 #   subscribes: liveCalibration, sensorEvents
 #   publishes:  frame, encodeIdx, model, features
+
+# espd -- talks to the esp32 modules
+#   subscribes: sendesp
 
 # **** stateful data transformers ****
 

@@ -1,9 +1,14 @@
+# ##!/usr/bin/env python
 import array
 import sys
 import usb
 import usb.core
 import usb.util
 import usb.control
+
+import selfdrive.messaging as messaging
+from common.realtime import Ratekeeper
+from common.services import service_list
 
 dev = None
 
@@ -21,8 +26,27 @@ def init_arduino():
   dev.ctrl_transfer(0x21, 0x20, 0, 0,
                     array.array('B', [0x00, 0xc2, 0x01, 0x00, 0x00, 0x00, 0x08]))
 
-def read_loop():
+def usb_read():
+  usb_data = ''
   while True:
+    try:
+      usb_data = dev.bulkRead(1, 0x83*256)
+      break
+    except (USBErrorIO, USBErrorOverflow):
+      print 'usb error'
+  return usb_data
+
+def read_loop(rate=200):
+  rk = Ratekeeper(rate)
+  context = zmq.Context()
+
+  init_arduino()
+
+  carstate = messaging.pub_sock(context, service_list['carstate'].port)
+
+  while True:
+    print usb_read()
+    """
     response = ''
     try:
       response = dev.read(0x83, 64).tostring()
@@ -33,7 +57,7 @@ def read_loop():
       print 'usb exception'
     except:
       print  'regular exception'
-
+    """
 def main():
    init_arduino()
    read_loop()

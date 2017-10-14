@@ -36,9 +36,9 @@ managed_processes = {
   #"boardd": ("boardd", ["./boardd"]),   # switch to c++ boardd
   "ui": ("ui", ["./ui"]),
   "visiond": ("visiond", ["./visiond"]),
-  "sensord": ("sensord", ["./sensord"]), 
-  "espd": "selfdrive.espd.espd" }
-
+  "sensord": ("sensord", ["./sensord"]),
+  "arduinod": "selfdrive.arduinod.arduinod",
+}
 running = {}
 
 # due to qualcomm kernel bugs SIGKILLing visiond sometimes causes page table corruption
@@ -54,7 +54,7 @@ car_started_processes = [
   'radard',
   'calibrationd',
   'visiond',
-  'espd']
+  ]
 
 
 # ****************** process management functions ******************
@@ -182,6 +182,8 @@ def manager_thread():
   start_managed_process("logcatd")
   start_managed_process("uploader")
   start_managed_process("ui")
+  start_managed_process("arduinod")
+
 
   if os.getenv("NOBOARD") is None:
     # *** wait for the board ***

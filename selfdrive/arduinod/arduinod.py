@@ -1,11 +1,8 @@
-#!/usr/local/bin/python
-
-# Based on boardd and code from http://tytouf.github.io/blog/libusb-arduino-en.html
-
+#!/usr/bin/env python
 import array
-import os
+import json
 import sys
-import time
+import usb
 import usb.core
 import usb.util
 import usb.control
@@ -14,80 +11,86 @@ import zmq
 import selfdrive.messaging as messaging
 from common.realtime import Ratekeeper
 from common.services import service_list
-from selfdrive.swaglog import cloudlog
 
-def can_capnp_to_arduino_list(can, src_filter=None):
-  msgs = []
-  for msg in can:
-    if src_filter is None or msg.src in src_filter:
-      msgs.append((msg.address, msg.busTime, msg.dat, msg.src))
-  return msg
+from cereal import car
 
-def arduino_send_many(arduino_list):
-  steer_template = "{'type':'steering','value':%s}"
-  throttle_template = "{'type':'throttle','value':%s}"
+dev = None
 
-  #for c in "{'type':'steering','value':%s}" % angle: 
-  #  dev.write(0x02, c)
-  dev.write(0x02, "{'type':'steering','value':%s}" % angle, timeout=50)
+def init_arduino():
+  global dev
   try:
-    #print 'Received: "%s"' % dev.read(0x83, 64).tostring()
-    response = dev.read(0x83, 64).tostring()
-    while len(response):
-      print "%s" % response
-      response = dev.read(0x83, 64).tostring()
+    dev = usb.core.find(idVendor=0x1b4f, idProduct=0x9206) # Sparkfun Aruino Pro Micro
   except:
-    print 'read failed'
-
-def arduino_recv():
-  pass
-
-def init_arduino()
-
-  # Look for a specific device and open it
-  #
-  dev = usb.core.find(idVendor=0x1b4f, idProduct=0x9206) # Sparkfun Aruino Pro Micro
-  if dev is None:
-      raise ValueError('Device not found')
-
-  # Detach interfaces if Linux already attached a driver on it.
-  #
-  for itf_num in [0, 1]:
+    print 'error connecting to arduino'
+  try:
+    for itf_num in [0, 1]:
       itf = usb.util.find_descriptor(dev.get_active_configuration(),
-                                     bInterfaceNumber=itf_num)
-      print itf
+                                    bInterfaceNumber=itf_num)
       if dev.is_kernel_driver_active(itf_num):
-          dev.detach_kernel_driver(itf)
+        dev.detach_kernel_driver(itf)
       usb.util.claim_interface(dev, itf)
+  except:
+    print 'error showing interfaces'
+  try:
+    dev.ctrl_transfer(0x21, 0x22, 0x01 | 0x02, 0, None)
+    dev.ctrl_transfer(0x21, 0x20, 0, 0,
+                      array.array('B', [0x00, 0xc2, 0x01, 0x00, 0x00, 0x00, 0x08]))
+  except:
+    print 'error sending ctrl transfer'
 
-  # set control line state 0x2221
-  # set line encoding 0x2021 (9600, 8N1)
-  #
-  dev.ctrl_transfer(0x21, 0x22, 0x01 | 0x02, 0, None)
-  dev.ctrl_transfer(0x21, 0x20, 0, 0,
-                    array.array('B', [0x80, 0x25, 0x00, 0x00, 0x00, 0x00, 0x08]))
-                    #array.array('B', [0x00, 0xc2, 0x01, 0x00, 0x00, 0x00, 0x08]))
+def usb_read():
+  usb_data = ''
+  while True:
+    try:
+      usb_data = dev.read(0x83, 256).tostring()
+      break
+    except:
+      print 'usb error'
+  return usb_data
 
-def arduinod_loop():
-
+def read_loop(rate=200):
   rk = Ratekeeper(rate)
   context = zmq.Context()
 
   init_arduino()
-
-  # Publish
-  logcan = messaging.pub_sock(context, service_list['can'].port)
-
-  # Subscribe using sendcan
-  sendarduino = messaging.sub_sock(context, service_list['sencan'].port)
+  print 'inited'
+  carstate = messaging.pub_sock(context, service_list['carState'].port)
 
   while True:
-    tsc = messaging.recv_sock(sendcan)
-    if tsc is not None:
-      arduino_send_many(can_capnp_to_arduino_list(tsc.sendcan))
+    data_string = usb_read()
+    lines = data_string.split('\n')
+    for line in lines:
+      steering = None
+      throttle = None
+      try:
+        # doesn't always get a full steering/throttle pair
+        steering, throttle = line.split()
+        #print 'steering: ' + steering
+        #print 'throttle: ' + throttle
+      except:
+        pass
 
-def main(gtcx=None):
-  if arduinod_loop()
+      ret = car.CarState.new_message()
+      if steering:
+        try:
+          # doesn't always get a number
+          ret.steeringAngle = int(steering)
+        except:
+          pass
+      if throttle:
+        try:
+          ret.gas = int(throttle)
+        except:
+          pass
 
-if __name__ == "__main__":
+      car_send = messaging.new_message()
+      car_send.init('carState') 
+      car_send.carState = ret
+      carstate.send(car_send.to_bytes())
+
+def main(gctx=None):
+   init_arduino()
+   read_loop()
+
+if __name__ == '__main__':
   main()

@@ -2,7 +2,8 @@
 import os
 import time
 
-if os.path.isfile("/init.qcom.rc"):
+# No need to check
+if False or os.path.isfile("/init.qcom.rc"):
   # check if NEOS update is required
   while 1:
     if ((not os.path.isfile("/VERSION")
@@ -34,7 +35,7 @@ from selfdrive.services import service_list
 from selfdrive.swaglog import cloudlog
 import selfdrive.messaging as messaging
 from selfdrive.thermal import read_thermal
-from selfdrive.registration import register
+#from selfdrive.registration import register
 from selfdrive.version import version
 import selfdrive.crash as crash
 
@@ -44,18 +45,20 @@ from selfdrive.loggerd.config import ROOT
 
 # comment out anything you don't want to run
 managed_processes = {
-  "uploader": "selfdrive.loggerd.uploader",
-  "controlsd": "selfdrive.controls.controlsd",
-  "radard": "selfdrive.controls.radard",
+  #"uploader": "selfdrive.loggerd.uploader",
+  #"controlsd": "selfdrive.controls.controlsd",
+  #"radard": "selfdrive.controls.radard",
   "loggerd": ("selfdrive/loggerd", ["./loggerd"]),
   "logmessaged": "selfdrive.logmessaged",
-  "tombstoned": "selfdrive.tombstoned",
+  #"tombstoned": "selfdrive.tombstoned",
   "logcatd": ("selfdrive/logcatd", ["./logcatd"]),
   "proclogd": ("selfdrive/proclogd", ["./proclogd"]),
-  "boardd": ("selfdrive/boardd", ["./boardd"]),   # switch to c++ boardd
+  #"boardd": ("selfdrive/boardd", ["./boardd"]),   # switch to c++ boardd
   "ui": ("selfdrive/ui", ["./ui"]),
   "visiond": ("selfdrive/visiond", ["./visiond"]),
-  "sensord": ("selfdrive/sensord", ["./sensord"]), }
+  "sensord": ("selfdrive/sensord", ["./sensord"]),
+  "arduinod": "selfdrive.arduinod.arduinod",
+  "ardcontrolsd": "selfdrive.controls.ardcontrolsd",}
 
 running = {}
 def get_running():
@@ -68,12 +71,13 @@ unkillable_processes = ['visiond']
 interrupt_processes = []
 
 car_started_processes = [
-  'controlsd',
+  #'controlsd',
   'loggerd',
   'sensord',
-  'radard',
+  #'radard',
   'visiond',
   'proclogd',
+  'ardcontrolsd',
 ]
 
 def register_managed_process(name, desc, car_started=False):
@@ -191,6 +195,9 @@ def manage_baseui(start):
     os.system("am force-stop com.baseui")
     baseui_running = False
 
+def register():
+  return "123", "1234"
+
 # ****************** run loop ******************
 
 def manager_init():
@@ -306,17 +313,18 @@ def manager_thread():
   start_managed_process("logmessaged")
   start_managed_process("logcatd")
   start_managed_process("tombstoned")
-  start_managed_process("uploader")
+  #start_managed_process("uploader")
   start_managed_process("ui")
   manage_baseui(True)
 
   # do this before panda flashing
   setup_eon_fan()
 
-  if os.getenv("NOBOARD") is None:
-    from panda import ensure_st_up_to_date
-    ensure_st_up_to_date()
-    start_managed_process("boardd")
+  #if os.getenv("NOBOARD") is None:
+  #  from panda import ensure_st_up_to_date
+  #  ensure_st_up_to_date()
+  #  start_managed_process("boardd")
+  start_managed_process("arduinod")
 
   started = False
   logger_dead = False
@@ -356,11 +364,11 @@ def manager_thread():
     print msg
 
     # uploader is gated based on the phone temperature
-    if max_temp > 85.0:
-      cloudlog.info("over temp: %r", max_temp)
-      kill_managed_process("uploader")
-    elif max_temp < 70.0:
-      start_managed_process("uploader")
+    # if max_temp > 85.0:
+    #  cloudlog.info("over temp: %r", max_temp)
+    #  kill_managed_process("uploader")
+    # elif max_temp < 70.0:
+    #   start_managed_process("uploader")
 
     if avail < 0.05:
       logger_dead = True
@@ -462,7 +470,8 @@ def wait_for_device():
       context = usb1.USBContext()
       for device in context.getDeviceList(skip_on_error=True):
         if (device.getVendorID() == 0xbbaa and device.getProductID() == 0xddcc) or \
-           (device.getVendorID() == 0x0483 and device.getProductID() == 0xdf11):
+           (device.getVendorID() == 0x0483 and device.getProductID() == 0xdf11) or \
+           (device.getVendorID() == 0x1b4f and device.getProductID() == 0x9206):
           bcd = device.getbcdDevice()
           handle = device.open()
           handle.claimInterface(0)
@@ -475,26 +484,6 @@ def wait_for_device():
     time.sleep(1)
 
 def main():
-  if os.getenv("NOLOG") is not None:
-    del managed_processes['loggerd']
-    del managed_processes['tombstoned']
-  if os.getenv("NOUPLOAD") is not None:
-    del managed_processes['uploader']
-  if os.getenv("NOVISION") is not None:
-    del managed_processes['visiond']
-  if os.getenv("NOBOARD") is not None:
-    del managed_processes['boardd']
-  if os.getenv("LEAN") is not None:
-    del managed_processes['uploader']
-    del managed_processes['loggerd']
-    del managed_processes['logmessaged']
-    del managed_processes['logcatd']
-    del managed_processes['tombstoned']
-    del managed_processes['proclogd']
-  if os.getenv("NOCONTROL") is not None:
-    del managed_processes['controlsd']
-    del managed_processes['radard']
-
   # support additional internal only extensions
   try:
     import selfdrive.manager_extensions

@@ -1193,6 +1193,11 @@ struct LiveMpcData {
   delta @3 :List(Float32);
 }
 
+struct ArduinoCommand {
+  throttle @0 :Int8;
+  steering @1 :Int8;
+}
+
 struct Event {
   # in nanoseconds?
   logMonoTime @0 :UInt64;
@@ -1234,5 +1239,6 @@ struct Event {
     ubloxGnss @34 :UbloxGnss;
     clocks @35 :Clocks;
     liveMpc @36 :LiveMpcData;
+    arduinoCommand @37 :ArduinoCommand;
   }
 }

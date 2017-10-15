@@ -29,7 +29,7 @@ managed_processes = {
   #"uploader": "selfdrive.loggerd.uploader",
   #"controlsd": "selfdrive.controls.controlsd",
   #"radard": "selfdrive.controls.radard",
-  #"calibrationd": "selfdrive.calibrationd.calibrationd",
+  "calibrationd": "selfdrive.calibrationd.calibrationd",
   "loggerd": "selfdrive.loggerd.loggerd",
   "logmessaged": "selfdrive.logmessaged",
   "logcatd": ("logcatd", ["./logcatd"]),
@@ -38,6 +38,7 @@ managed_processes = {
   "visiond": ("visiond", ["./visiond"]),
   "sensord": ("sensord", ["./sensord"]),
   "arduinod": "selfdrive.arduinod.arduinod",
+  "ardcontrolsd": "selfdrive.controls.ardcontrolsd",
 }
 running = {}
 
@@ -48,7 +49,7 @@ unkillable_processes = ['visiond']
 interrupt_processes = ['loggerd']
 
 car_started_processes = [
-  'controlsd',
+  'ardcontrolsd',
   'loggerd',
   'sensord',
   'radard',

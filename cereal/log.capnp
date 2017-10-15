@@ -286,6 +286,11 @@ struct LogRotate {
   path @1 :Text;
 }
 
+struct ArduinoCommand {
+  throttle @0 :Int8;
+  steering @1 :Int8;
+}
+
 
 struct Event {
   logMonoTime @0 :UInt64;
@@ -313,5 +318,6 @@ struct Event {
     androidLogEntry @20 :AndroidLogEntry;
     gpsLocation @21 :GpsLocationData;
     carState @22 :Car.CarState;
+    arduinoCommand @23 :ArduinoCommand;
   }
 }

@@ -48,49 +48,84 @@ def usb_read():
       print 'usb error'
   return usb_data
 
-def read_loop(rate=200):
+def usb_write(data):
+   dev.write(0x02, data, timeout=50)
+
+def in_pressed_range(control_value):
+  return abs(control_value) > 50
+
+def arduino_read():
+  data_string = usb_read()
+  lines = data_string.split('\n')
+  for line in lines:
+    steering = None
+    throttle = None
+    try:
+      # doesn't always get a full steering/throttle pair
+      steering, throttle = line.split()
+      #print 'steering: ' + steering
+      #print 'throttle: ' + throttle
+    except:
+      pass
+
+    ret = car.CarState.new_message()
+    if steering:
+      try:
+        # doesn't always get a number
+        steeringAngle = int(steering)
+        ret.steeringAngle = steeringAngle
+        ret.steeringPressed = in_pressed_range(steeringAngle)
+      except:
+        pass
+    if throttle:
+      try:
+        throttleForce = int(throttle)
+        ret.gas = throttleForce
+        ret.gasPressed = in_pressed_range(throttleForce)
+      except:
+        pass
+    return ret
+
+def make_arduino_command(command, value):
+  # enclose in <> for the arduino function
+  return "<{'type':'%s','value':%d}>" % (command, value)
+
+def arduino_loop(rate=200):
   rk = Ratekeeper(rate)
   context = zmq.Context()
 
   init_arduino()
-  print 'inited'
   carstate = messaging.pub_sock(context, service_list['carState'].port)
-
+  arduino = messaging.sub_sock(context, service_list['arduinoCommand'].port)
+  live100 = messaging.sub_sock(context, service_list['live100'].port)
+  
   while True:
-    data_string = usb_read()
-    lines = data_string.split('\n')
-    for line in lines:
-      steering = None
-      throttle = None
-      try:
-        # doesn't always get a full steering/throttle pair
-        steering, throttle = line.split()
-        #print 'steering: ' + steering
-        #print 'throttle: ' + throttle
-      except:
-        pass
 
-      ret = car.CarState.new_message()
-      if steering:
-        try:
-          # doesn't always get a number
-          ret.steeringAngle = int(steering)
-        except:
-          pass
-      if throttle:
-        try:
-          ret.gas = int(throttle)
-        except:
-          pass
+    carStateMsg = arduino_read()
 
-      car_send = messaging.new_message()
-      car_send.init('carState') 
-      car_send.carState = ret
-      carstate.send(car_send.to_bytes())
+    car_send = messaging.new_message()
+    car_send.init('carState') 
+    car_send.carState = carStateMsg
+    carstate.send(car_send.to_bytes())
+
+    cmd = messaging.recv_sock(arduino)
+    if cmd is not None:
+      usb_write(make_arduino_command('steering',cmd.arduinoCommand.steering))
+
+    lcmd = messaging.recv_sock(live100)
+    if lcmd is not None:
+      if lcmd.live100.enabled:
+#autonomy enabled, so disable radio
+        radioEnabled = 0
+      else:
+        radioEnabled = 1
+      usb_write(make_arduino_command('radio', radioEnabled))
+
+   #rk.keep_time()
 
 def main(gctx=None):
    init_arduino()
-   read_loop()
+   arduino_loop()
 
 if __name__ == '__main__':
   main()

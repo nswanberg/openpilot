@@ -35,7 +35,7 @@ service_list = {
   "androidLog": Service(8020, True),
   "carState": Service(8021, True),
   "sendesp": Service(8022, True),
-  #"arduino": Service(8023, True)
+  "arduinoCommand": Service(8023, True),
 }
 
 # manager -- base process to manage starting and stopping of all others
@@ -55,14 +55,15 @@ service_list = {
 #   subscribes: liveCalibration, sensorEvents
 #   publishes:  frame, encodeIdx, model, features
 
-# espd -- talks to the esp32 modules
-#   subscribes: sendesp
+# arduinod -- talks to the arduino
+#   subscribes: arduino
+#   publishes: carState
 
 # **** stateful data transformers ****
 
 # controlsd -- actually drives the car
-#   subscribes: can, thermal, model, live20
-#   publishes:  carState, sendcan, live100
+#   subscribes: carState
+#   publishes: arduino 
 
 # radard -- processes the radar data
 #   subscribes: can, live100, model

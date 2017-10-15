@@ -367,7 +367,8 @@ def manager_thread():
 
     # start constellation of processes when the car starts
     # with 2% left, we killall, otherwise the phone is bricked
-    if td is not None and td.health.started and avail > 0.02:
+#    if td is not None and td.health.started and avail > 0.02:
+    if True:
       if not started:
         Params().car_start()
         started = True

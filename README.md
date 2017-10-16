@@ -1,5 +1,7 @@
 A version of openpilot crudely hacked to navigate the Sparkfun AVC 2017 course. Openpilot is running a Oneplus 3, talking to an Arduino Micro running [this code](https://gist.github.com/nswanberg/58a4f0a37774d458835d84c4da836779), and controlling a Redcat Blackout XTE Pro.
 
+Uses some basic OpenCV code detect drivable areas using color.
+
 by Andy, Geena, Nate, Tom
 
 Welcome to openpilot

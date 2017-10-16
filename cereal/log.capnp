@@ -1198,6 +1198,10 @@ struct ArduinoCommand {
   steering @1 :Int8;
 }
 
+struct GetFrames {
+  command @0 :Text;
+}
+
 struct Event {
   # in nanoseconds?
   logMonoTime @0 :UInt64;
@@ -1240,5 +1244,6 @@ struct Event {
     clocks @35 :Clocks;
     liveMpc @36 :LiveMpcData;
     arduinoCommand @37 :ArduinoCommand;
+    getFrames @38 :GetFrames;
   }
 }

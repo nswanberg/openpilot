@@ -54,7 +54,7 @@ managed_processes = {
   "logcatd": ("selfdrive/logcatd", ["./logcatd"]),
   "proclogd": ("selfdrive/proclogd", ["./proclogd"]),
   #"boardd": ("selfdrive/boardd", ["./boardd"]),   # switch to c++ boardd
-  "ui": ("selfdrive/ui", ["./ui"]),
+  #"ui": ("selfdrive/ui", ["./ui"]),
   "visiond": ("selfdrive/visiond", ["./visiond"]),
   "sensord": ("selfdrive/sensord", ["./sensord"]),
   "arduinod": "selfdrive.arduinod.arduinod",
@@ -314,7 +314,7 @@ def manager_thread():
   start_managed_process("logcatd")
   start_managed_process("tombstoned")
   #start_managed_process("uploader")
-  start_managed_process("ui")
+  #start_managed_process("ui")
   manage_baseui(True)
 
   # do this before panda flashing

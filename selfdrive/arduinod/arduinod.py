@@ -49,7 +49,7 @@ def usb_read():
   return usb_data
 
 def usb_write(data):
-   dev.write(0x02, data, timeout=50)
+   dev.write(0x02, data, timeout=500)
 
 def in_pressed_range(control_value):
   return abs(control_value) > 50
@@ -98,7 +98,9 @@ def arduino_loop(rate=200):
   carstate = messaging.pub_sock(context, service_list['carState'].port)
   arduino = messaging.sub_sock(context, service_list['arduinoCommand'].port)
   live100 = messaging.sub_sock(context, service_list['live100'].port)
-  
+ 
+  writeSteering = True
+
   while True:
 
     carStateMsg = arduino_read()
@@ -110,7 +112,12 @@ def arduino_loop(rate=200):
 
     cmd = messaging.recv_sock(arduino)
     if cmd is not None:
-      usb_write(make_arduino_command('steering',cmd.arduinoCommand.steering))
+      if writeSteering:
+        usb_write(make_arduino_command('steering',cmd.arduinoCommand.steering))
+        writeSteering = False
+      else:
+        usb_write(make_arduino_command('throttle',cmd.arduinoCommand.throttle))
+        writeSteering = True
 
     lcmd = messaging.recv_sock(live100)
     if lcmd is not None:

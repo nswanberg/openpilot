@@ -4,10 +4,16 @@ import time
 import subprocess
 from cffi import FFI
 import ctypes
- 
+import zmq 
 import numpy as np
  
 import cv2
+
+from cereal import log
+
+import selfdrive.messaging as messaging
+
+from selfdrive.services import service_list
  
 gf_dir = os.path.dirname(os.path.abspath(__file__))
  
@@ -168,12 +174,25 @@ def analyze_image(frame):
      #   cv2.circle(rgb,tuple(point),2,(100,100,255))
     return act
 
+def get_next_direction(framegen):
+  return analyze_image(framegen.next())
+
+def getframesd_thread(gctx, rate=20):
+  context = zmq.Context()
+
+  getframessock = messaging.pub_sock(context, service_list['getFrames'].port)
+
+  while 1:
+    for buf in getframes():
+      command = analyze_image(buf)
+      msg = messaging.new_message()
+      msg.init('getFrames')
+      msg.getFrames.command = command
+      getframessock.send(msg.to_bytes())
+
+def main(gctx=None):
+  getframesd_thread(gctx, 20)
+
 
 if __name__ == "__main__":
-  for buf in getframes():
-  #buf = bufgen.next()
-  #buf = cv2.flip(buf,1)
-  #print buf.shape, buf[101, 101]
-    print(analyze_image(buf))
-  #cv2.imwrite('test.png', rgb)
-  #os.system("mv test.png /sdcard/testimg/")
+  main()

@@ -25,6 +25,8 @@ from selfdrive.controls.lib.alertmanager import AlertManager
 from selfdrive.controls.lib.vehicle_model import VehicleModel
 from selfdrive.controls.lib.adaptivecruise import A_ACC_MAX
 
+from selfdrive.debug.getframes import getframes, get_next_direction
+
 V_CRUISE_MAX = 144
 V_CRUISE_MIN = 8
 V_CRUISE_DELTA = 8

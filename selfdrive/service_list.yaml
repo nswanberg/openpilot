@@ -46,6 +46,7 @@ ubloxGnss: [8033, true]
 clocks: [8034, true]
 liveMpc: [8035, true]
 arduinoCommand: [8036, true]
+getFrames: [8037, true]
 
 testModel: [8040, false]
 
